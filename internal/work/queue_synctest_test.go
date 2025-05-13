@@ -1,4 +1,4 @@
-//go:build goexperiment.synctest
+//go:build goexperiment.synctest && go1.25
 
 package work
 
@@ -13,7 +13,7 @@ import (
 )
 
 func TestQueueBasicSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		q := NewQueue(1, func(_ *QueueHandle, x int) (int, error) { return x, nil })
 		got, err := q.Get(42)
 		assert.NoError(t, err)
@@ -23,7 +23,7 @@ func TestQueueBasicSynctest(t *testing.T) {
 }
 
 func TestQueuePanicPropagationSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		const want = "the expected panic value"
 		q := NewSetQueue(1, func(_ *QueueHandle, _ Empty) error { panic(want) })
 		defer func() {
@@ -35,7 +35,7 @@ func TestQueuePanicPropagationSynctest(t *testing.T) {
 }
 
 func TestQueueGoexitPropagationSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		q := NewSetQueue(1, func(_ *QueueHandle, _ Empty) error {
 			runtime.Goexit()
 			return nil
@@ -53,7 +53,7 @@ func TestQueueGoexitPropagationSynctest(t *testing.T) {
 }
 
 func TestQueueGetAllErrorSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		keys := makeIntKeys(10)
 		q := NewSetQueue(0, func(_ *QueueHandle, x int) error {
 			if x >= 5 {
@@ -68,7 +68,7 @@ func TestQueueGetAllErrorSynctest(t *testing.T) {
 }
 
 func TestQueueGoexitHandlingSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		stepGoexit := make(chan struct{})
 		q := NewQueue(1, func(_ *QueueHandle, x int) (int, error) {
 			if x == 0 {
@@ -98,7 +98,7 @@ func TestQueueGoexitHandlingSynctest(t *testing.T) {
 }
 
 func TestQueueDeduplicationSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		unblock := make(chan struct{})
 		q := NewQueue(0, func(_ *QueueHandle, x int) (int, error) {
 			<-unblock
@@ -147,7 +147,7 @@ func TestQueueDeduplicationSynctest(t *testing.T) {
 }
 
 func TestQueueConcurrencyLimitSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		const workerCount = 5
 		const submitCount = workerCount * 10
 
@@ -186,7 +186,7 @@ func TestQueueConcurrencyLimitSynctest(t *testing.T) {
 }
 
 func TestQueueOrderingSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		var handledOrder []int
 		unblock := make(chan struct{})
 		q := NewQueue(1, func(_ *QueueHandle, x int) (int, error) {
@@ -232,7 +232,7 @@ func TestQueueOrderingSynctest(t *testing.T) {
 }
 
 func TestQueueReattachPrioritySynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		var workers [2]func(*QueueHandle)
 
 		// Create a special handler that will detach as soon as it starts...
@@ -287,7 +287,7 @@ func TestQueueReattachPrioritySynctest(t *testing.T) {
 }
 
 func TestQueueReattachConcurrencySynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		const workerCount = 5
 		const submitCount = workerCount * 10
 
@@ -337,7 +337,7 @@ func TestQueueReattachConcurrencySynctest(t *testing.T) {
 }
 
 func TestQueueDetachReturnSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		var (
 			inflight        atomic.Int32
 			breached        atomic.Bool

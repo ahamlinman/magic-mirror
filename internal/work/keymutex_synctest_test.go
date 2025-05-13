@@ -1,4 +1,4 @@
-//go:build goexperiment.synctest
+//go:build goexperiment.synctest && go1.25
 
 package work
 
@@ -11,7 +11,7 @@ import (
 )
 
 func TestKeyMutexBasicSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		const keyCount = 3
 		const workerCount = 2 * keyCount
 
@@ -48,7 +48,7 @@ func TestKeyMutexBasicSynctest(t *testing.T) {
 }
 
 func TestKeyMutexDetachReattachSynctest(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		var (
 			km       KeyMutex[Empty]
 			unblock0 = make(chan struct{})
